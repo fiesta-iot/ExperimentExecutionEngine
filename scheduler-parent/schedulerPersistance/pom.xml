@@ -1,0 +1,169 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  
+   <parent>
+    <groupId>eu.fiesta_iot.platform.eee</groupId>
+    <artifactId>scheduler-parent</artifactId>
+    <version>0.1</version>
+  </parent> 
+  
+  <groupId>eu.fiesta_iot.platform.eee</groupId>
+  <artifactId>schedulerPersistance</artifactId>
+  <packaging>jar</packaging>
+  <version>0.1</version>
+  
+  <repositories>
+    <repository>
+      <id>JBoss repository</id>
+      <url>https://repository.jboss.org/nexus/content/repositories/root_repository/maven2/</url>
+    </repository>
+  </repositories>
+  <dependencies>
+  	<dependency>
+	  <groupId>org.json</groupId>
+	  <artifactId>json</artifactId>
+	  <version>20140107</version>
+    </dependency>
+
+    <dependency>
+	  <groupId>log4j</groupId>
+	  <artifactId>log4j</artifactId>
+	  <version>1.2.17</version>
+    </dependency>
+<dependency>
+	    <groupId>org.slf4j</groupId>
+	    <artifactId>slf4j-api</artifactId>
+	    <version>1.7.25</version>
+	</dependency>
+		<!-- Binding for Log4J -->
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-slf4j-impl</artifactId>
+			<version>2.10.0</version>
+			<exclusions>
+				<exclusion>
+					<artifactId>slf4j-api</artifactId>
+					<groupId>org.slf4j</groupId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		
+		<!-- Log4j API and Core implementation required for binding -->
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-api</artifactId>
+			<version>2.10.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-core</artifactId>
+			<version>2.10.0</version>
+		</dependency>
+
+
+
+    <dependency>
+		<groupId>commons-logging</groupId>
+		<artifactId>commons-logging</artifactId>
+		<version>1.1.1</version>
+    </dependency>
+    <dependency>
+	  <groupId>mysql</groupId>
+	  <artifactId>mysql-connector-java</artifactId>
+	  <version>5.1.34</version>
+    </dependency>
+
+	<!-- Hibernate core -->
+	<dependency>
+		<groupId>hibernate</groupId>
+		<artifactId>hibernate3</artifactId>
+		<version>3.2.3.GA</version>
+	</dependency>
+ 
+	<!-- Hibernate annotation -->
+	<dependency>
+		<groupId>hibernate-annotations</groupId>
+		<artifactId>hibernate-annotations</artifactId>
+		<version>3.3.0.GA</version>
+	</dependency>
+ 
+	<dependency>
+		<groupId>hibernate-commons-annotations</groupId>
+		<artifactId>hibernate-commons-annotations</artifactId>
+		<version>3.0.0.GA</version>
+	</dependency>
+
+
+    <dependency>
+	  <groupId>javax.persistence</groupId>
+	  <artifactId>persistence-api</artifactId>
+	  <version>1.0.2</version>
+    </dependency>
+
+	<dependency>
+		<groupId>javax.transaction</groupId>
+		<artifactId>jta</artifactId>
+		<version>1.1</version>
+	</dependency>
+
+    <dependency>
+	  <groupId>dom4j</groupId>
+  	  <artifactId>dom4j</artifactId>
+	  <version>1.6.1</version>
+    </dependency>
+
+    <dependency>
+	  <groupId>commons-collections</groupId>
+	  <artifactId>commons-collections</artifactId>
+	  <version>3.2.1</version>
+    </dependency>
+
+    <dependency>
+	  <groupId>cglib</groupId>
+	  <artifactId>cglib</artifactId>
+	  <version>2.2.2</version>
+    </dependency>
+
+	<dependency>
+		<groupId>antlr</groupId>
+		<artifactId>antlr</artifactId>
+		<version>2.7.6</version>
+	</dependency>
+	
+	<dependency>
+		<groupId>com.mchange</groupId>
+		<artifactId>c3p0</artifactId>
+		<version>0.9.5</version>
+	</dependency>
+	
+    <dependency>
+	  <groupId>junit</groupId>
+	  <artifactId>junit</artifactId>
+	  <version>4.11</version>
+	  <scope>test</scope>
+    </dependency>
+  </dependencies>
+  
+  <build>
+  	<finalName>schedulerDB</finalName>
+    <plugins>
+    	<plugin>
+	        <groupId>org.apache.maven.plugins</groupId>
+	        <artifactId>maven-compiler-plugin</artifactId>
+	        <version>2.3.2</version>
+	        <configuration>
+	          <source>1.6</source>
+	          <target>1.6</target>
+	        </configuration>
+        </plugin>
+      
+		<plugin>
+	        <groupId>org.apache.maven.plugins</groupId>
+	        <artifactId>maven-surefire-plugin</artifactId>
+	        <version>2.17</version>
+	        <configuration>
+	        </configuration>
+	    </plugin>
+    </plugins>
+  </build>
+</project>

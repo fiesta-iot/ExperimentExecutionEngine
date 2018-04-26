@@ -1,0 +1,829 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "An overview of Experiment Execution Engine Developer APIs is provided here.\n\n**Getting Started:** To get started depending on your needs you either need `/schedule`, `/monitoring`, `/accounting`, `/polling` or `/subscription` APIs. In the following document `<CHOICE>` is one of `/schedule`, `/monitoring`, `/accounting`, `/polling` or `/subscription`.\n\nBelow are the Java code steps to be performed to successfully call the API you need.\n\n- **Step 1** use following code and specify the `<HOST>`, the `<CHOICE>`, and the `<API>` parameter.\n    <pre class=\\\"brush: java\\\">URL url = new URL(\"https:\\\\&lt;HOST&gt;\\sechdulerServices\\&lt;CHOICE&gt;\\&lt;API&gt;\"));</pre>\n  \n- **Step 2** create the url connection as below. Here `<TYPE>` is either `GET` or `POST`\n  <pre class=\\\"brush: java\\\">URLConnection urlConn = url.openConnection();\n  ((HttpURLConnection) urlConn).setRequestMethod(\"&ltTYPE&gt\");</pre>\n  \n- **Step 3:** Based on what parameters are required by the `<API>`, you need to either set the following:\n  \n  - for header paramaters\n   <pre class=\\\"brush: java\\\">con.setRequestProperty(\"&lt;HEADERPARAM&gt;\", &lt;HEADERPARAMVALUE&gt;);\n   //similary set other header parameters\n   ...</pre>\n  \n  - for query parameters in the **Step 1**  provide the paramters in the `URL` itself. For example:\n   <pre class=\\\"brush: java\\\">URL url = new URL(\"https:\\\\&lt;HOST&gt;\\sechdulerServices\\&lt;CHOICE&gt;\\&lt;API&gt;?\n   &lt;QUERYPARAM1&gt;=URLEncoder.encode(&lt;QUERYPARAM1VALUE&gt;, \\\"UTF-8\\\") + \n   &amp;&lt;QUERYPARAM2&gt;= + URLEncoder.encode(&lt;QUERYPARAM2VALUE&gt;, \\\"UTF-8\\\"\");\n   //similary set other query parameters if needed.\n   ...\n   </pre>\n  \n  - for `JSON` input in the body use:\n    <pre class=\\\"brush: java\\\">String jsonString=&lt;JSON&gt;; </pre>\n  \n- **Step 4**: Depending on the above step, \n   \n  - for `JSON` as the input, use:\n   <pre class=\\\"brush: java\\\">OutputStreamWriter writer = new OutputStreamWriter(urlConn.getOutputStream());\n    writer.write(jsonString.getBytes(UTF8));</pre>\n  \n  - for other case, use:\n     <pre class=\"brush: java\">InputStream input = urlConn.getInputStream();\n     StringBuffer buffer = new StringBuffer();\n     byte[] b = new byte[1024];\n     int readBytes = 0;\n     while (true) { \n       readBytes = input.read(b);\n       if (readBytes &lt; 0) break;\n       buffer.append(new String(b, 0, readBytes));\n     }\n     input.close();\n     JSONObject json = new JSONObject(buffer.toString());\n     ...\n     </pre>\n",
+        "version": "0.0.2",
+        "title": "Experiment Execution Engine Developer APIs",
+        "contact": {
+            "name": "Experiment Execution Engine API support",
+            "email": "rachit.agarwal@inria.fr"
+        }
+    },
+    "host": "<HOST>",
+    "basePath": "/schedulerServices",
+    "schemes": [
+        "https"
+    ],
+    "paths": {
+        "/scheduler/scheduleFISMOExecution": {
+            "post": {
+                "tags": [
+                    "Scheduling REST API"
+                ],
+                "summary": "Scheduling a FISMO",
+                "description": "This API is used to start execution of the experiment service (`FISMO`). This API provides a `jobID` to the `FISMO` upon the successful scheduling on the FIESTA-IoT Meta Cloud. The API uses `timeSchedulePayload` to define the `startTime`, `stopTime` and `periodicity` of the job to be executed.",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "fismoID",
+                        "in": "header",
+                        "description": "A `fismoID` is the ID of a FISMO that has to be scheduled on the FIESTA-IoT Meta Cloud",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "iPlanetDirectoryPro",
+                        "in": "header",
+                        "description": "the accesstoken of the user",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "femoID",
+                        "in": "header",
+                        "description": "A `femoID` is the ID of a FEMO that has FISMOs to be scheduled on the FIESTA-IoT Meta Cloud",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "timeSchedulePayload",
+                        "in": "header",
+                        "description": "The timeSchedulePayload is a `JSON` string that should contain `startTime`, `stopTime` and `periodicity`. A sample of such `JSON` is `{\"startTime\":\"2016-09-15T13:57:00.0Z\", \"stopTime\":\"2016-09-15T16:30:00.0Z\",\"periodicity\":60}`. Here `startTime` and `stopTime` are in `Date` format (`YYYY-MM-DD'T'HH:mm:ss.SSS'Z'`) the `periodicity` is in `seconds`. If not specified then ERM service is called to get the parameter value.\n",
+                        "required": false,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "returns HTTP response in `JSON` format. The returned `JSON` is `{\"response\": \"Job Scheduled\", \"jobID\": <JobID>}`\n"
+                    },
+                    "400": {
+                        "description": "On the failure an appropriate message is returned in `JSON` format. The returned `JSON` is `{\"response\": <ERROR>}`. Here the Error Message can be one of the following:\n\n  - `NoSuchServiceModelObjectID`: FISMOID is incorrect or does not\nexist.\n\n  - `NoSuchUserID`: userID is incorrect or does not exist.\n\n  - `NoSuchExperimentID`: FEMOID is incorrect or does not exist.\n\n  - `InvalidTImeScheduleStructure`: timeSchedulePayload JSON\nstructure is incorrect or does not exist.\n\n  - `UnParsableDate`: either startTime or stopTime is not in the\ncorrect format and thus can not be parsed in the required format.\n\n  - `SchedulerException`: is a generic error returned by the Quartz\nscheduler.\n\n  - `ImplementationException`: is a generic error however with\nrespect to this API it would mean \"Failed to execute\".\n\n  - `PersistenceException`: is the hibernate generic exception.\n\n  - `ERM Exceptions`: in case there is an exception at the ERM, those exceptions are returned.\n",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/scheduler/getJobIDfromFISMOIDUserIDandFEMOID": {
+            "get": {
+                "tags": [
+                    "Scheduling REST API"
+                ],
+                "summary": "Get Job ID from a FISMO ID and userID",
+                "description": "This API is used to get the `jobID` of a particular already scheduled `FISMO` that is associated to a user and their experiment (marked by FEMOID). Note that the `jobID` is the ID given by the Scheduler to the `FISMO` execution. ",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "fismoID",
+                        "in": "header",
+                        "description": "A `fismoID` is the ID of a FISMO that was scheduled on the FIESTA-IoT Meta Cloud.",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "iPlanetDirectoryPro",
+                        "in": "header",
+                        "description": "the accesstoken of the user",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "femoID",
+                        "in": "header",
+                        "description": "A `femoID` is the ID of a FEMO that has FISMOs scheduled on the FIESTA-IoT Meta Cloud",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "owner",
+                        "in": "query",
+                        "description": "it is used to determine if the search should be performed in the subscription or owner db",
+                        "required": false,
+                        "type": "boolean",
+                        "default": true,
+                        "enum": [
+                            true,
+                            false
+                        ]
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "returns HTTP response in `JSON` format. The returned `JSON` is `{\"jobID\": <JobID>}`. If there are no jobs found for a particular FIMSO `{\"response\": \"No JobID\"}` is returned\n"
+                    },
+                    "400": {
+                        "description": "On the failure an appropriate message is returned in `JSON` format. The returned `JSON` is `{\"response\": <ERROR>}`. Here the Error Message can be one of the following:\n\n  - `NoSuchServiceModelObjectID`: FISMOID is incorrect or does not\nexist.\n\n  - `NoSuchUserID`: userID is incorrect or does not exist.\n\n  - `NoSuchExperimentID`: FEMOID is incorrect or does not exist.\n\n  - `SchedulerException`: is a generic error returned by the Quartz\nscheduler.\n\n  - `PersistenceException`: is the hibernate generic exception.\n\n  - `ImplementationException`: is a generic error however with\nrespect to this API it would mean \"Failed to execute\".\n",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/scheduler/getJobIDDetails": {
+            "get": {
+                "tags": [
+                    "Scheduling REST API"
+                ],
+                "summary": "Get JobID details",
+                "description": "This API is used to get the details such as `Group`, `timeSchedule`, `status` associated to a particular `JobID`.",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "jobID",
+                        "in": "header",
+                        "description": "A `jobID` is the ID of a job executing on the EEE",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "iPlanetDirectoryPro",
+                        "in": "header",
+                        "description": "the accesstoken of the user",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "returns HTTP response in `JSON` format. The returned `JSON` is `{\"JobID\": <JobID>, \"Group\":<GroupID>, \"timeSchedule\":{\"startTIme\":<startTime>, \"stopTime\":<stopTime>, \"periodicity\":<periodicity>}, \"status\":<status>}`. Here `Group` is the FISMOID the Job is associated to, `startTime` and `stopTime` are in `Date` format (`YYYY-MM-DD HH:mm:ss`), `periodicity` is in `seconds` and `status` is one from the list `[BLOCKED, COMPLETE, ERROR, NONE, NORMAL, PAUSED]`. Further, if there are no job information/metadata is found then  `{\"response\": \"No Job information found\"}` is returned.\n"
+                    },
+                    "400": {
+                        "description": "On the failure an appropriate message is returned in `JSON` format. The returned `JSON` is `{\"response\": <ERROR>}`. Here the Error Message can be one of the following:\n\n  - `NoSuchJobID`: JobID is incorrect or does not exist.\n\n  - `SchedulerException`: is a generic error returned by the Quartz\nscheduler.\n\n  - `ImplementationException`: is a generic error however with\nrespect to this API it would mean \"Failed to execute\".\n",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/scheduler/stopJobExecution": {
+            "post": {
+                "tags": [
+                    "Scheduling REST API"
+                ],
+                "summary": "Pause a job from further executions",
+                "description": "The API is used to pause the execution of a particular job",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "jobID",
+                        "in": "header",
+                        "description": "A `jobID` is the ID of a job executing on the EEE",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "iPlanetDirectoryPro",
+                        "in": "header",
+                        "description": "the accesstoken of the user",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "returns HTTP response in `JSON` format. The returned `JSON` is `{\"response\": \"Job paused successfully\"}`\n"
+                    },
+                    "400": {
+                        "description": "On the failure an appropriate message is returned in `JSON` format. The returned `JSON` is `{\"response\": <ERROR>}`. Here the Error Message can be one of the following:\n\n  - `NoSuchJobID`: JobID is incorrect or does not exist.\n\n  - `SchedulerException`: is a generic error returned by the Quartz\nscheduler.\n\n  - `ImplementationException`: is a generic error however with\nrespect to this API it would mean \"Failed to execute\"\n",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/scheduler/resumeJobExecution": {
+            "post": {
+                "tags": [
+                    "Scheduling REST API"
+                ],
+                "summary": "Resume a paused job from further executions",
+                "description": "The API is used to resume the execution of a particular already paused job",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "jobID",
+                        "in": "header",
+                        "description": "A `jobID` is the ID of a job executing on the EEE",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "iPlanetDirectoryPro",
+                        "in": "header",
+                        "description": "the accesstoken of the user",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "returns HTTP response in `JSON` format. The returned `JSON` is `{\"response\": \"Job resumed successfully\"}`\n"
+                    },
+                    "400": {
+                        "description": "On the failure an appropriate message is returned in `JSON` format. The returned `JSON` is `{\"response\": <ERROR>}`. Here the Error Message can be one of the following:\n\n\n\n  - `NoSuchJobID`: JobID is incorrect or does not exist.\n\n  - `SchedulerException`: is a generic error returned by the Quartz\nscheduler.\n\n  - `ImplementationException`: is a generic error however with\nrespect to this API it would mean \"Failed to execute\".\n",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/scheduler/rescheduleJob": {
+            "post": {
+                "tags": [
+                    "Scheduling REST API"
+                ],
+                "summary": "Reschedule a job",
+                "description": "This API is used to change the schedule of an already scheduled Job.",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "jobID",
+                        "in": "header",
+                        "description": "A `jobID` is the ID of a job executing on the EEE",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "iPlanetDirectoryPro",
+                        "in": "header",
+                        "description": "the accesstoken of the user",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "timeSchedulePayload",
+                        "in": "header",
+                        "description": "The timeSchedulePayload is a `JSON` string that should contain `startTime`, `stopTime` and `periodicit`. A sample of such `JSON` is `{\"startTime\":\"2016-09-15T13:57:00.0Z\", \"stopTime\":\"2016-09-15T16:30:00.0Z\",\"periodicity\":60}`. Here `startTime` and `stopTime` are in `Date` format (`YYYY-MM-DD'T'HH:mm:ss.SSS'Z'`) the `periodicity` is in `seconds`. If not specified then ERM service is called to get the parameter value.\n",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "returns HTTP response in `JSON` format. The returned `JSON` is `{\"response\": \"Job rescheduled successfully\"}`\n"
+                    },
+                    "400": {
+                        "description": "On the failure an appropriate message is returned in `JSON` format. The returned `JSON` is `{\"response\": <ERROR>}`. Here the Error Message can be one of the following:\n\n\n\n  - `NoSuchJobID`: JobID is incorrect or does not exist.\n\n  - `SchedulerException`: is a generic error returned by the Quartz\nscheduler.\n\n  - `ImplementationException`: is a generic error however with\nrespect to this API it would mean \"Failed to execute\".\n\n  - `InvalidTImeScheduleStructure`: timeSchedulePayload JSON\nstructure is incorrect or does not exist.\n\n  - `UnParsableDate`: either startTime or stopTime is not in the\ncorrect format and thus can not be parsed in the required format.\n",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/scheduler/deleteScheduledJob": {
+            "post": {
+                "tags": [
+                    "Scheduling REST API"
+                ],
+                "summary": "delete a job",
+                "description": "This API is used to remove a particular scheduled job from the Scheduler.",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "jobID",
+                        "in": "header",
+                        "description": "A `jobID` is the ID of a job executing on the EEE",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "iPlanetDirectoryPro",
+                        "in": "header",
+                        "description": "the accesstoken of the user",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "returns HTTP response in `JSON` format. The returned `JSON` is `{\"response\": \"Job deleted successfully\"}`\n"
+                    },
+                    "400": {
+                        "description": "On the failure an appropriate message is returned in `JSON` format. The returned `JSON` is `{\"response\": <ERROR>}`. Here the Error Message can be one of the following:\n\n\n\n  - `NoSuchJobID`: JobID is incorrect or does not exist.\n\n  - `PersistenceException`: is the hibernate generic exception.\n\n  - `SchedulerException`: is a generic error returned by the Quartz\nscheduler.\n\n  - `ImplementationException`: is a generic error however with\nrespect to this API it would mean \"Failed to execute\"\n",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/subscription/subscribeToFISMOReport": {
+            "post": {
+                "tags": [
+                    "Subscription REST API"
+                ],
+                "summary": "Subscribe to a FISMO",
+                "description": "This API is used to subscribe to a particular FISMO's report",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "fismoID",
+                        "in": "header",
+                        "description": "A `fismoID` is the ID of a FISMO that user wants to associate to",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "iPlanetDirectoryPro",
+                        "in": "header",
+                        "description": "the accesstoken of the user",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "femoID",
+                        "in": "header",
+                        "description": "the ID of the experiment to which subscription is to be associated to",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "experimentOutput",
+                        "in": "header",
+                        "description": "The experimentOutput is a `JSON` string that should contain `url`, `optionalFile` and `optionalWidget`. This `JSON` should be `{\"url\": <url>, \"optionalFile\": <FILE>, \"optionalWidget\": <WIDGET>}`. Currently, in this version, the `optionalFile` and `optionalWidget` support is not available. A sample of currently valid experimentOutput is   `{\"url\":\"http://myExperiment.com\"}`.\n",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "returns HTTP response in `JSON` format. The returned `JSON` is `{\"response\": \"subscribed\", \"FISMOID\":<FIMSOID>, \"JobID\" : <JobID>}`\n"
+                    },
+                    "400": {
+                        "description": "On the failure an appropriate message is returned in `JSON` format. The returned `JSON` is `{\"response\": <ERROR>}`. Here the Error Message can be one of the following:\n\n\n\n  - `NoSuchServiceModelObjectID`: FISMOID is incorrect or does not\nexist.\n\n  - `NoSuchUserID`: userID is incorrect or does not exist.\n\n  - `NoSuchExperimentID`: FEMOID is incorrect or does not exist.\n\n  - `AlreadySubscribed`: FISMOID is already subscribed and associated\nto the userID.\n\n  - `InvalidURL`: invalid url.\n\n  - `InvalidExperimentOutputJson`: invalid Experiment Output Json.\n\n  - `ImplementationException`: is a generic error however with\nrespect to this API it would mean \"Failed to execute or subscription failed\".\n\n  - `SchedulerException`: is a generic error returned by the Quartz\nscheduler.\n\n  - `PersistenceException`: is the hibernate generic exception.\n\n  - `ERM Exceptions`: \"TODO: ADD HERE LIST OF EXCEPTIONS THAT CAN BE\nRETURNED\".\n",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/subscription/unsubscribeToFISMOReport": {
+            "post": {
+                "tags": [
+                    "Subscription REST API"
+                ],
+                "summary": "Unsubscribe to a FISMO",
+                "description": "This API is used to unsubscribe from a particular FISMO's report",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "fismoID",
+                        "in": "query",
+                        "description": "A `fismoID` is the ID of a FISMO that experimenter subscribed to",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "iPlanetDirectoryPro",
+                        "in": "header",
+                        "description": "the accesstoken of the user",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "femoID",
+                        "in": "query",
+                        "description": "the ID of the experiment to which subscription was associated to",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "returns HTTP response in `JSON` format. The returned `JSON` is `{\"response\": \"Unsubscribed\"}`\n"
+                    },
+                    "400": {
+                        "description": "On the failure an appropriate message is returned in `JSON` format. The returned `JSON` is `{\"response\": <ERROR>}`. Here the Error Message can be one of the following:\n\n\n\n  - `NoSuchServiceModelObjectID`: FISMOID is incorrect or does not\nexist.\n\n  - `NoSuchUserID`: userID is incorrect or does not exist.\n\n  - `NoSuchExperimentID`: FEMOID is incorrect or does not exist.\n\n  - `SubscriptionNotFound`: FISMOID is not associated to the userID.\n\n  - `ImplementationException`: is a generic error however with\nrespect to this API it would mean \"Failed to execute or subscription failed\".\n",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/polling/pollForReport": {
+            "post": {
+                "tags": [
+                    "Polling REST API"
+                ],
+                "summary": "Polling for results of a FISMO",
+                "description": "This API is used to invoke a previously defined FISMO. A call to this API will only produce one Resultset that will be sent to the URL specified in the `ExperimentOutput` parameter.",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "fismoID",
+                        "in": "header",
+                        "description": "A `fismoID` is the ID of a FISMO that has to be executed on the FIESTA-IoT Meta Cloud",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "iPlanetDirectoryPro",
+                        "in": "header",
+                        "description": "the accesstoken of the user",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "femoID",
+                        "in": "header",
+                        "description": "A `femoID` is the ID of a FEMO that has FISMOs to be executed on the FIESTA-IoT Meta Cloud",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "owner",
+                        "in": "query",
+                        "description": "it is used to determine if the search should be performed in the subscription or owner db",
+                        "required": false,
+                        "type": "boolean",
+                        "default": true,
+                        "enum": [
+                            true,
+                            false
+                        ]
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "returns HTTP response in `JSON` format. The returned `JSON` is `{\"response\": \"Polled Successfully\"}`\n"
+                    },
+                    "400": {
+                        "description": "On the failure an appropriate message is returned in `JSON` format. The returned `JSON` is `{\"response\": <ERROR>}`. Here the Error Message can be one of the following:\n\n\n\n  - `NoSuchServiceModelObjectID`: FISMOID is incorrect or does not\nexist.\n\n  - `NoSuchUserID`: userID is incorrect or does not exist.\n\n  - `NoSuchExperimentID`: FEMOID is incorrect or does not exist.\n\n  - `PersistenceException`: is the hibernate generic exception.\n\n  - `ImplementationException`: is a generic error however with\nrespect to this API it would mean \"Failed to execute\".\n\n  - `ERM Exceptions`: \"TODO: ADD HERE LIST OF EXCEPTIONS THAT CAN BE\nRETURNED\".\n",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/polling/dynamicPollForReport": {
+            "post": {
+                "tags": [
+                    "Polling REST API"
+                ],
+                "summary": "Polling for results of a dynamic query in a FISMO ",
+                "description": "This API is used to invoke a previously defined query in a FISMO. A call to this API will only produce one Resultset that will be sent to the URL specified in the `ExperimentOutput` parameter. Experimenters should only use it if they have dynamic attributes defined in the query",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "fismoID",
+                        "in": "header",
+                        "description": "A `fismoID` is the ID of a FISMO that has to be executed on the FIESTA-IoT Meta Cloud",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "iPlanetDirectoryPro",
+                        "in": "header",
+                        "description": "the accesstoken of the user",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "femoID",
+                        "in": "header",
+                        "description": "A `femoID` is the ID of a FEMO that has FISMOs to be executed on the FIESTA-IoT Meta Cloud",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "owner",
+                        "in": "query",
+                        "description": "it is used to determine if the search should be performed in the subscription or owner db",
+                        "required": false,
+                        "type": "boolean",
+                        "default": true,
+                        "enum": [
+                            true,
+                            false
+                        ]
+                    },
+                    {
+                        "name": "geoLatitude",
+                        "in": "query",
+                        "description": "latitude",
+                        "required": false,
+                        "type": "string",
+                        "default": "0"
+                    },
+                    {
+                        "name": "geoLongitude",
+                        "in": "query",
+                        "description": "Longitude",
+                        "required": false,
+                        "type": "string",
+                        "default": "0"
+                    },
+                    {
+                        "name": "intervalNowToPast",
+                        "in": "query",
+                        "description": "interval that defines the duration from now to past. This should be in milliseconds",
+                        "required": false,
+                        "type": "integer",
+                        "default": 0
+                    },
+                    {
+                        "name": "fromTime",
+                        "in": "query",
+                        "description": "in case intervalNowToPast is not used and experimenters want to specify from time. it should be milliseconds after epoach.",
+                        "required": false,
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    {
+                        "name": "toTime",
+                        "in": "query",
+                        "description": "in case intervalNowToPast is not used and experimenters want to specify to time. it should be milliseconds after epoach.",
+                        "required": false,
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    {
+                        "name": "otherParameters",
+                        "in": "body",
+                        "description": "other parameters in the query are defined. for box locations please specify here. This includes KATInput and otherParameters input in the format `{\"KATInput\":{\"Method\":[\"\"], \"Parameters\":[\"\"]}}, \"otherParameters\":{<key>:<value>}}`.",
+                        "required": false,
+                        "type": "string",
+                        "default": "{}"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "returns HTTP response in `JSON` format. The returned `JSON` is `{\"response\": \"Polled Successfully\"}`\n"
+                    },
+                    "400": {
+                        "description": "On the failure an appropriate message is returned in `JSON` format. The returned `JSON` is `{\"response\": <ERROR>}`. Here the Error Message can be one of the following:\n\n  - `NoSuchServiceModelObjectID`: FISMOID is incorrect or does not\n\nexist.\n\n\n\n  - `NoSuchUserID`: userID is incorrect or does not exist.\n\n\n\n  - `NoSuchExperimentID`: FEMOID is incorrect or does not exist.\n\n\n\n  - `PersistenceException`: is the hibernate generic exception.\n\n\n\n  - `ImplementationException`: is a generic error however with\n\nrespect to this API it would mean \"Failed to execute\".\n\n\n\n  - `ERM Exceptions`: \"TODO: ADD HERE LIST OF EXCEPTIONS THAT CAN BE\n\nRETURNED\".\n",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/monitoring/getJobIDStatus": {
+            "get": {
+                "tags": [
+                    "Monitoring REST API"
+                ],
+                "summary": "Get status of the Job ID",
+                "description": "This API is used to get the status of a particular `jobID`, i.e., one from the list `[BLOCKED, COMPLETE, ERROR, NONE, NORMAL, PAUSED]`",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "jobID",
+                        "in": "query",
+                        "description": "A `jobID` is the ID of a job executing on the EEE",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "iPlanetDirectoryPro",
+                        "in": "header",
+                        "description": "the accesstoken of the user",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "returns HTTP response in `JSON` format. The returned `JSON` is `{\"JobID\": <JobID>,\"status\": <status>}`. If there are no jobs found for a particular FIMSO `{\"response\": \"Job not scheduled\"}` is returned\n"
+                    },
+                    "400": {
+                        "description": "On the failure an appropriate message is returned in `JSON` format. The returned `JSON` is `{\"response\": <ERROR>}`. Here the Error Message can be one of the following:\n\n\n\n  - `NoSuchJobID`: JobID is incorrect or does not exist.\n\n  - `SchedulerException`: is a generic error returned by the Quartz\nscheduler.\n\n  - `ImplementationException`: is a generic error however with\nrespect to this API it would mean \"Failed to execute\".\n",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/monitoring/getAllSubscriptionsOfExperimenter": {
+            "get": {
+                "tags": [
+                    "Monitoring REST API"
+                ],
+                "summary": "Get users subscribed to a FISMO ID",
+                "description": "This API is used to get a list of subscribers (or the experimenters) that are using a particular FISMO. ",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "iPlanetDirectoryPro",
+                        "in": "header",
+                        "description": "the accesstoken of the user",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "returns HTTP response in `JSON` format. The returned `JSON` is `{\"FISMOIDs\": [<FISMOID1>,<FISMOID2>,..]}`. Here, the \"FISMOIDs\" is a list of fismoIDs that a user has subscribed. It is also possible to get an empty JSON object if the user has not subscribed to any given FISMOID.\n"
+                    },
+                    "400": {
+                        "description": "On the failure an appropriate message is returned in `JSON` format. The returned `JSON` is `{\"response\": <ERROR>}`. Here the Error Message can be one of the following:\n\n\n\n  - `NoSuchUserID`: userID is incorrect or does not exist.\n\n  - `PersistenceException`: is the hibernate generic exception.\n\n  - `ImplementationException`: is a generic error however with\nrespect to this API it would mean \"Failed to execute\".\n",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/monitoring/getMySubscriptionsforExperiment": {
+            "get": {
+                "tags": [
+                    "Monitoring REST API"
+                ],
+                "summary": "Get experimenter subscription in an Experiment",
+                "description": "This API is used to get a list of user subscriptions with respect to a particular experiment.",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "iPlanetDirectoryPro",
+                        "in": "header",
+                        "description": "the accesstoken of the user",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "femoID",
+                        "in": "query",
+                        "description": "the ID of the experiment to which subscription is to be associated to",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "returns HTTP response in `JSON` format. The returned `JSON` is `{\"Subscriptions\": [{\"jobID\" : <jobID>, \"fismoID\": <FISMOID1>},..]}`. Here, the \"FISMOIDs\" is a list of fismoIDs that a user has subscribed. It is also possible to get an empty JSON object if the user has not subscribed to any given FISMOID.\n"
+                    },
+                    "400": {
+                        "description": "On the failure an appropriate message is returned in `JSON` format. The returned `JSON` is `{\"response\": <ERROR>}`. Here the Error Message can be one of the following:\n\n\n\n  - `NoSuchUserID`: userID is incorrect or does not exist.\n\n  - `NoSuchExperimentID`: FEMOID is incorrect or does not exist.\n\n  - `PersistenceException`: is the hibernate generic exception.\n\n  - `ImplementationException`: is a generic error however with\nrespect to this API it would mean \"Failed to execute\"\n",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/monitoring/getJobExecutionLog": {
+            "get": {
+                "tags": [
+                    "Monitoring REST API"
+                ],
+                "summary": "Get FISMO Execution Log",
+                "description": "This API is used to get the ExecutionLog of a FISMO. The return is a JSON array with `executionTime` and `dataConsumed` information. Here `executionTime` is the time it took to successfully execute the FISMO.",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "jobID",
+                        "in": "query",
+                        "description": "A `jobID` is the ID of a job executing on the EEE",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "iPlanetDirectoryPro",
+                        "in": "header",
+                        "description": "the accesstoken of the user",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "returns HTTP response in `JSON` format. The returned `JSON` is `{\"ExecutionLog\": [{\"executionTime\": <time1>, \"dataConsumed\": <dataConsumed1>},  {\"executionTime\": <time2>, \"dataConsumed\": <dataConsumed2>},..]}`. Here, the \"FISMOIDs\" is a list of fismoIDs that a user has subscribed. It is also possible to get an empty JSON object if there is no `ExecutionLog` for the `jobID`.\n"
+                    },
+                    "400": {
+                        "description": "On the failure an appropriate message is returned in `JSON` format. The returned `JSON` is `{\"response\": <ERROR>}`. Here the Error Message can be one of the following:\n\n\n\n  - `NoSuchJobID`: JobID is incorrect or does not exist.\n\n  - `PersistenceException`: is the hibernate generic exception.\n\n  - `ImplementationException`: is a generic error however with\nrespect to this API it would mean \"Failed to execute\".\n",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/accounting/getUserExecutionCount": {
+            "get": {
+                "tags": [
+                    "Accounting REST API"
+                ],
+                "summary": "Get User Execution count",
+                "description": "This API is used to get the number of times a particular user has executed any JOB on EEE.",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "fromTime",
+                        "in": "query",
+                        "description": "The `fromTime`, in the format \"YYYY-MM-DD'T'HH:mm:ss.SSS'Z'\".\n",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "toTime",
+                        "in": "query",
+                        "description": "The `toTime`, in the format \"YYYY-MM-DD'T'HH:mm:ss.SSS'Z'\".\n",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "iPlanetDirectoryPro",
+                        "in": "header",
+                        "description": "the accesstoken of the user",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "returns HTTP response in `JSON` format. The returned `JSON` is {\"count\": <count>} is returned as a Response if successful. Here, the `count` is the number of times the job is executed. Note that the count can also be 0. \n"
+                    },
+                    "400": {
+                        "description": "On the failure an appropriate message is returned in `JSON` format. The returned `JSON` is `{\"response\": <ERROR>}`. Here the Error Message can be one of the following:\n\n\n\n  - `NoSuchJobID`: JobID is incorrect or does not exist.\n\n  - `PersistenceException`: is the hibernate generic exception.\n\n  - `ImplementationException`: is a generic error however with\nrespect to this API it would mean \"Failed to execute\".\n",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/accounting/getJobExecutionCount": {
+            "get": {
+                "tags": [
+                    "Accounting REST API"
+                ],
+                "summary": "Get FISMO Execution count",
+                "description": "This API is used to get the number of times a particular job was executed.",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "jobID",
+                        "in": "query",
+                        "description": "A `jobID` is the ID of a job executing on the EEE",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "iPlanetDirectoryPro",
+                        "in": "header",
+                        "description": "the accesstoken of the user",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "returns HTTP response in `JSON` format. The returned `JSON` is {\"count\": <count>} is returned as a Response if successful. Here, the `count` is the number of times the job is executed. Note that the count can also be 0. \n"
+                    },
+                    "400": {
+                        "description": "On the failure an appropriate message is returned in `JSON` format. The returned `JSON` is `{\"response\": <ERROR>}`. Here the Error Message can be one of the following:\n\n\n\n  - `NoSuchJobID`: JobID is incorrect or does not exist.\n\n  - `PersistenceException`: is the hibernate generic exception.\n\n  - `ImplementationException`: is a generic error however with\nrespect to this API it would mean \"Failed to execute\".\n",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

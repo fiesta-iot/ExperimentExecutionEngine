@@ -1,0 +1,195 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  
+  <parent>
+    <groupId>eu.fiesta_iot.platform.eee</groupId>
+    <artifactId>scheduler-parent</artifactId>
+    <version>0.1</version>
+  </parent> 
+  
+  <groupId>eu.fiesta-iot.platform.eee</groupId>
+  <artifactId>schedulerServices</artifactId>
+  <packaging>war</packaging>
+  <version>0.1</version>
+  <name>schedulerServices</name>
+  <url>http://maven.apache.org</url>
+  
+  <properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<junit.version>3.8.1</junit.version>
+		<slf4j.version>1.7.25</slf4j.version>
+		<log4j.version>2.10.0</log4j.version>
+		<jena.version>3.0.1</jena.version>
+		<jboss.resteasy.version>3.0.19.Final</jboss.resteasy.version>
+		<javax.cdi-api.version>1.2</javax.cdi-api.version>
+		<javax.servlet.version>3.0-alpha-1</javax.servlet.version>
+		<maven-compiler.plugin.version>3.5.1</maven-compiler.plugin.version>
+		<maven-war.plugin.version>2.6</maven-war.plugin.version>
+	</properties>
+
+	<dependencies>
+		<!-- Binding for Unit test -->
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>${junit.version}</version>
+			<scope>test</scope>
+		</dependency>
+		
+		<!-- Binding for Log4J -->
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-slf4j-impl</artifactId>
+			<version>${log4j.version}</version>
+			<exclusions>
+				<exclusion>
+					<artifactId>slf4j-api</artifactId>
+					<groupId>org.slf4j</groupId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		
+		<!-- Log4j API and Core implementation required for binding -->
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-api</artifactId>
+			<version>${log4j.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-core</artifactId>
+			<version>${log4j.version}</version>
+		</dependency>
+		
+		<!-- Binding for MySql test -->
+		<dependency>
+			<groupId>mysql</groupId>
+			<artifactId>mysql-connector-java</artifactId>
+			<version>5.1.39</version>
+		</dependency>
+		
+		<!-- Binding for Json -->
+		<dependency>
+		    <groupId>org.json</groupId>
+		    <artifactId>json</artifactId>
+		    <version>20160810</version>
+		</dependency>
+
+		<!-- Import the JAX-RS API, we use provided scope as the API is included in JBoss WildFly -->
+		<dependency>
+			<groupId>org.jboss.resteasy</groupId>
+			<artifactId>resteasy-jaxrs</artifactId>
+			<version>${jboss.resteasy.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+	         <groupId>org.jboss.resteasy</groupId>
+	         <artifactId>resteasy-client</artifactId>
+	         <version>${jboss.resteasy.version}</version>
+		</dependency>
+		<dependency>
+		   <groupId>org.jboss.resteasy</groupId>
+		   <artifactId>jaxrs-api</artifactId>
+		   <version>3.0.12.Final</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>org.jboss.resteasy</groupId>
+			<artifactId>resteasy-servlet-initializer</artifactId>
+			<version>${jboss.resteasy.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.jboss.resteasy</groupId>
+			<artifactId>resteasy-jaxb-provider</artifactId>
+			<version>${jboss.resteasy.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>javax.enterprise</groupId>
+			<artifactId>cdi-api</artifactId>
+			<version>${javax.cdi-api.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>servlet-api</artifactId>
+			<version>${javax.servlet.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>xml-apis</groupId>
+			<artifactId>xml-apis</artifactId>
+			<version>1.4.01</version>
+			<!-- <scope>provided</scope> -->
+		</dependency>
+		<dependency>
+			<groupId>org.jboss.logging</groupId>
+			<artifactId>jboss-logging</artifactId>
+			<version>3.3.0.Final</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<!-- Hashids library -->
+		<dependency>
+			<groupId>org.hashids</groupId>
+			<artifactId>hashids</artifactId>
+			<version>1.0.1</version>
+		</dependency>
+		
+		<!-- Quartz -->
+		<dependency>
+			<groupId>org.quartz-scheduler</groupId>
+			<artifactId>quartz</artifactId>
+			<version>2.2.3</version>
+		</dependency>
+		<dependency>
+			<groupId>org.quartz-scheduler</groupId>
+		   	<artifactId>quartz-jobs</artifactId>
+		   	<version>2.2.3</version>
+		</dependency>
+		<!-- ========javamelody (monitoring) dependency ==========-->
+    
+    <dependency>
+      <groupId>net.bull.javamelody</groupId>
+      <artifactId>javamelody-core</artifactId>
+      <version>1.45.0</version>
+    </dependency>
+		
+		<!--======== FIESTA dependencies ============-->
+	    <dependency>
+			<groupId>eu.fiesta-iot</groupId>
+			<artifactId>utils.fiesta-commons</artifactId>
+			<version>0.0.1</version>
+	    </dependency>
+		<dependency>
+			<groupId>eu.fiesta_iot.platform.eee</groupId>
+			<artifactId>schedulerPersistance</artifactId>
+			<version>0.1</version>
+		</dependency>
+	
+	</dependencies>
+  	<build>
+		<finalName>schedulerServices</finalName>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>${maven-compiler.plugin.version}</version>
+				<configuration>
+					<source>1.8</source>
+					<target>1.8</target>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-war-plugin</artifactId>
+				<version>${maven-war.plugin.version}</version>
+				<configuration>
+					<failOnMissingWebXml>false</failOnMissingWebXml>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+</project>
