@@ -104,3 +104,14 @@ This following configuration is for wildlfy 10.0.0.
 
 Use `http://<HOST>:<PORT>/EEEapidocs/`
 
+### Authors
+
+This work is (c) by Rachit Agarwal, Inria
+
+### Licence
+
+This component is licensed under a GPL V3.
+
+### Acknowledgement
+
+This work is funded by the European project\Federated Interoperable Semantic IoT/cloud Testbeds and Applications (FIESTA-IoT) from the European Union’s Horizon 2020 Programme with the Grant Agreement No. CNECT-ICT-643943. The authors would also like to thank the FIESTA-IoT consortium for the fruitful discussions.
